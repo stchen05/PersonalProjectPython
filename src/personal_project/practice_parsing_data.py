@@ -63,22 +63,30 @@ def read_head(path: Path, n: int = 7) -> List[Dict[str, str]]:
 def main() -> None:
     # Load and display sample data
     path = find_sample_csv()
-    head = read_head(path, n=5)  # show first 5 rows
-    print(f"Using: {path}")
-    print("First rows:")
-    for r in head:
-        print(r)
+    data = read_head(path, n=10)  # get up to 10 rows for sorting
+    print(f"Using: {path}\n")
 
+    # Sort data by score (highest to lowest)
+    sorted_data = sorted(data, key=lambda x: int(x['score']), reverse=True)
+    
+    # Print sorted leaderboard
+    print("🏆 Leaderboard (by score):")
+    print("-" * 40)
+    print(f"{'Rank':<6}{'Name':<12}{'Score':<8}{'Level':<6}")
+    print("-" * 40)
+    
+    for i, player in enumerate(sorted_data, 1):
+        print(f"{i:<6}{player['name']:<12}{player['score']:<8}{player['level']:<6}")
+    
     # Print some basic stats
     try:
-        total_score = sum(int(r['score']) for r in head)
-        avg_score = total_score / len(head)
-        print(f"\nStats:")
+        total_score = sum(int(r['score']) for r in sorted_data)
+        avg_score = total_score / len(sorted_data)
+        print("\n📊 Statistics:")
+        print(f"Total players: {len(sorted_data)}")
         print(f"Average score: {avg_score:.1f}")
-        
-        # Find highest scorer
-        top_player = max(head, key=lambda x: int(x['score']))
-        print(f"Top player: {top_player['name']} (score: {top_player['score']})")
+        print(f"Top score: {sorted_data[0]['score']} (by {sorted_data[0]['name']})")
+        print(f"Lowest score: {sorted_data[-1]['score']} (by {sorted_data[-1]['name']})")
     except (ValueError, KeyError) as e:
         print(f"Could not calculate stats: {e}")
 
