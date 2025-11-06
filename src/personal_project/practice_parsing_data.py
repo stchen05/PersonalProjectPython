@@ -61,15 +61,27 @@ def read_head(path: Path, n: int = 7) -> List[Dict[str, str]]:
 
 
 def main() -> None:
-	path = find_sample_csv()
-	head = read_head(path, n=7)
-	print(f"Using: {path}")
-	print("First rows:")
-	for r in head:
-		print(r)
-		
-	print("test github again")
+    # Load and display sample data
+    path = find_sample_csv()
+    head = read_head(path, n=5)  # show first 5 rows
+    print(f"Using: {path}")
+    print("First rows:")
+    for r in head:
+        print(r)
+
+    # Print some basic stats
+    try:
+        total_score = sum(int(r['score']) for r in head)
+        avg_score = total_score / len(head)
+        print(f"\nStats:")
+        print(f"Average score: {avg_score:.1f}")
+        
+        # Find highest scorer
+        top_player = max(head, key=lambda x: int(x['score']))
+        print(f"Top player: {top_player['name']} (score: {top_player['score']})")
+    except (ValueError, KeyError) as e:
+        print(f"Could not calculate stats: {e}")
 
 
 if __name__ == "__main__":
-	main()
+    main()
