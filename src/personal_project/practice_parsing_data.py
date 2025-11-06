@@ -68,7 +68,7 @@ def main() -> None:
 	for r in head:
 		print(r)
 		
-	print("test github")
+	print("test github again")
 
 
 if __name__ == "__main__":
