@@ -48,3 +48,6 @@ Desktop.ini
 *.log
 .env.local
 .env.*.local
+
+# Kaggle API token
+.kaggle/kaggle.json
