@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib.ticker import FuncFormatter
 
 
 DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "Cars Datasets 2025.csv"
@@ -77,12 +78,43 @@ def plot_price_hist(df: pd.DataFrame):
     plt.close()
 
 
+def _format_axis_currency(ax, axis='x', divide=1):
+    """Format axis ticks with thousands separator.
+
+    Parameters:
+    - ax: matplotlib Axes
+    - axis: 'x' or 'y'
+    - divide: divide value for scaling (e.g., 1000 to show thousands)
+    """
+    def _fmt(x, pos):
+        try:
+            val = x / divide
+            if abs(val) >= 1000:
+                # keep integer formatting for large numbers
+                return f"{int(val):,}"
+            # otherwise show without decimals if whole, else 1 decimal
+            if float(val).is_integer():
+                return f"{int(val):,}"
+            return f"{val:,.1f}"
+        except Exception:
+            return f"{x}"
+
+    fmt = FuncFormatter(_fmt)
+    if axis == 'x':
+        ax.xaxis.set_major_formatter(fmt)
+    else:
+        ax.yaxis.set_major_formatter(fmt)
+
+
 def plot_log_price_hist(df: pd.DataFrame):
     plt.figure(figsize=(8, 5))
-    log_price = np.log(df['price'].dropna())
+    # use log10 for easier interpretation and drop non-positive prices
+    price = df['price'].dropna()
+    price = price[price > 0]
+    log_price = np.log10(price)
     sns.histplot(log_price, bins=50)
-    plt.title('Log(Price) distribution')
-    plt.xlabel('log(Price)')
+    plt.title('Log10(Price) distribution')
+    plt.xlabel('log10(Price)')
     plt.tight_layout()
     out = OUT_DIR / 'log_price_hist.png'
     plt.savefig(out)
@@ -97,6 +129,9 @@ def plot_hp_vs_price(df: pd.DataFrame):
     plt.ylabel('Price (USD)')
     plt.tight_layout()
     out = OUT_DIR / 'horsepower_vs_price.png'
+    ax = plt.gca()
+    # format y-axis with thousands separator
+    _format_axis_currency(ax, axis='y', divide=1)
     plt.savefig(out)
     plt.close()
 
@@ -111,6 +146,8 @@ def plot_company_boxplot(df: pd.DataFrame, top_n=10):
     plt.title(f'Price distribution by top {top_n} companies')
     plt.tight_layout()
     out = OUT_DIR / 'company_price_boxplot.png'
+    ax = plt.gca()
+    _format_axis_currency(ax, axis='y', divide=1)
     plt.savefig(out)
     plt.close()
 
