@@ -1,8 +1,18 @@
 from pathlib import Path
-import re
 import joblib
 import numpy as np
 import pandas as pd
+try:
+    from personal_project.cleaning import parse_price, extract_number
+except Exception:
+    # when run as a script from src/..., package import may fail; load via file
+    import importlib.util, sys
+    p = Path(__file__).resolve().parent / 'cleaning.py'
+    spec = importlib.util.spec_from_file_location('personal_project.cleaning', str(p))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    parse_price = mod.parse_price
+    extract_number = mod.extract_number
 
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.pipeline import make_pipeline
@@ -17,33 +27,8 @@ MODEL_OUT = Path(__file__).resolve().parents[2] / "models"
 MODEL_OUT.mkdir(parents=True, exist_ok=True)
 
 
-def parse_price(s: str):
-    if not isinstance(s, str):
-        return np.nan
-    s = s.replace(',', '').strip()
-    s = re.sub(r"[^0-9\-\.\s]", "", s)
-    if '-' in s:
-        parts = [p for p in s.split('-') if p.strip() != ""]
-        try:
-            nums = [float(p) for p in parts]
-            return sum(nums) / len(nums)
-        except Exception:
-            return np.nan
-    try:
-        return float(s)
-    except Exception:
-        return np.nan
 
-
-def extract_number(s: str):
-    if not isinstance(s, str):
-        return np.nan
-    s = s.replace(',', '')
-    m = re.findall(r"[-+]?[0-9]*\.?[0-9]+", s)
-    if not m:
-        return np.nan
-    nums = [float(x) for x in m]
-    return sum(nums) / len(nums)
+# Use shared cleaning helpers from personal_project.cleaning
 
 
 def load_and_clean(path=DATA_PATH):

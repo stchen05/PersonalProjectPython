@@ -17,6 +17,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.ticker import FuncFormatter
+try:
+    from personal_project.cleaning import parse_price, extract_number
+except Exception:
+    # Support running this file directly (python src/personal_project/eda_cars.py)
+    # by loading the cleaning module from the same directory.
+    import importlib.util, sys
+    p = Path(__file__).resolve().parent / 'cleaning.py'
+    spec = importlib.util.spec_from_file_location('personal_project.cleaning', str(p))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    parse_price = mod.parse_price
+    extract_number = mod.extract_number
 
 
 DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "Cars Datasets 2025.csv"
@@ -24,33 +36,7 @@ OUT_DIR = Path(__file__).resolve().parents[2] / "reports" / "figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def extract_number(s: str):
-    if not isinstance(s, str):
-        return np.nan
-    s = s.replace(',', '')
-    m = re.findall(r"[-+]?[0-9]*\.?[0-9]+", s)
-    if not m:
-        return np.nan
-    nums = [float(x) for x in m]
-    return sum(nums) / len(nums)
-
-
-def parse_price(s: str):
-    if not isinstance(s, str):
-        return np.nan
-    s = s.replace(',', '').strip()
-    s = re.sub(r"[^0-9\-\.\s]", "", s)
-    if '-' in s:
-        parts = [p for p in s.split('-') if p.strip() != ""]
-        try:
-            nums = [float(p) for p in parts]
-            return sum(nums) / len(nums)
-        except Exception:
-            return np.nan
-    try:
-        return float(s)
-    except Exception:
-        return np.nan
+# parsing functions are provided by personal_project.cleaning
 
 
 def load_clean():
